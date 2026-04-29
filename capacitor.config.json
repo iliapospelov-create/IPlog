@@ -1,0 +1,11 @@
+{
+  "appId": "org.ilyapospelov.ipautolog",
+  "appName": "IPautolog",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}
