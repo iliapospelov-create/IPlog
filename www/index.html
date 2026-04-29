@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#07101e">
+<title>IPautolog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#07101e;color:#c8deff;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(96,160,255,0.2);border-radius:10px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(255,120,80,.45)}70%{box-shadow:0 0 0 10px rgba(255,120,80,0)}100%{box-shadow:0 0 0 0 rgba(255,120,80,0)}}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.fadeUp{animation:fadeUp .3s ease both}
+
+/* Glass buttons */
+.btn{position:relative;backdrop-filter:blur(12px) saturate(1.4);-webkit-backdrop-filter:blur(12px) saturate(1.4);border:1px solid rgba(255,255,255,0.13);border-top-color:rgba(255,255,255,0.2);background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));color:rgba(200,220,255,.9);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;border-radius:10px;padding:8px 15px;transition:all .18s ease;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1}
+.btn::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(135deg,rgba(255,255,255,.07),transparent 55%);opacity:0;transition:opacity .18s}
+.btn:hover{border-color:rgba(96,160,255,.35);background:linear-gradient(135deg,rgba(96,160,255,.12),rgba(96,160,255,.04));color:#fff}
+.btn:hover::before{opacity:1}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,rgba(60,120,255,.35),rgba(30,80,200,.25));border-color:rgba(96,160,255,.45);border-top-color:rgba(140,190,255,.5);color:#c8e0ff}
+.btn-primary:hover{background:linear-gradient(135deg,rgba(70,140,255,.45),rgba(40,100,220,.35));color:#fff}
+.btn-danger{background:linear-gradient(135deg,rgba(200,60,60,.2),rgba(160,30,30,.1));border-color:rgba(255,100,100,.3);color:rgba(255,160,160,.9)}
+.btn-danger:hover{background:linear-gradient(135deg,rgba(220,70,70,.35),rgba(180,40,40,.2));border-color:rgba(255,120,120,.5);color:#ffaaaa}
+.btn-sm{padding:5px 10px;border-radius:8px;font-size:12px}
+.btn-icon{padding:5px 7px;border-radius:7px}
+.btn-success{background:linear-gradient(135deg,rgba(40,160,80,.3),rgba(20,120,60,.2));border-color:rgba(60,200,100,.35);color:rgba(140,255,180,.9)}
+.btn-success:hover{background:linear-gradient(135deg,rgba(50,180,90,.4),rgba(30,140,70,.3));color:#afffca}
+
+/* Inputs */
+.inp{background:rgba(10,18,40,.65);border:1px solid rgba(96,160,255,.18);border-top-color:rgba(96,160,255,.08);color:rgba(200,225,255,.9);outline:none;transition:border-color .2s,box-shadow .2s;font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;border-radius:10px;width:100%}
+.inp:focus{border-color:rgba(96,160,255,.5);box-shadow:0 0 0 3px rgba(60,120,255,.1)}
+.inp::placeholder{color:rgba(120,160,220,.38)}
+select.inp option{background:#0d1830;color:#c8e0ff}
+textarea.inp{resize:vertical;min-height:68px}
+
+/* Glass panel */
+.panel{background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.018));backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border:1px solid rgba(255,255,255,.08);border-top-color:rgba(255,255,255,.13);border-radius:16px}
+
+/* Progress */
+.progress-track{background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden;height:4px;margin-top:8px}
+.progress-fill{height:100%;border-radius:99px;transition:width .5s ease}
+
+/* Chip */
+.chip{display:inline-flex;align-items:center;gap:4px;background:rgba(30,60,120,.35);border:1px solid rgba(60,100,180,.25);color:rgba(140,180,230,.7);border-radius:6px;padding:2px 8px;font-size:11px}
+.chip-blue{border-color:rgba(96,180,255,.3);color:rgba(140,200,255,.8)}
+
+/* Warn */
+.warn-pulse{animation:pulseRing 2s ease-in-out infinite}
+
+/* Overlay / modal */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(2,6,20,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:16px;animation:overlayIn .2s ease}
+.modal-box{width:100%;max-width:550px;max-height:92vh;overflow-y:auto;box-shadow:0 40px 100px rgba(0,0,40,.7),0 0 0 1px rgba(96,160,255,.1);animation:modalIn .25s ease}
+
+/* Category grid */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.cat-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border-radius:10px;cursor:pointer;font-size:18px;transition:all .15s}
+.cat-btn span{font-size:10px;color:rgba(120,160,220,.6);text-align:center;line-height:1.2}
+.cat-btn.active{background:rgba(30,60,140,.5)!important;border-color:rgba(96,160,255,.45)!important}
+.cat-btn.active span{color:rgba(180,210,255,.9)}
+
+/* Filter active */
+.filter-active{background:linear-gradient(135deg,rgba(60,120,255,.35),rgba(30,80,200,.25))!important;border-color:rgba(96,160,255,.45)!important;color:#c8e0ff!important}
+
+/* Reminder panel */
+.reminder-panel{background:rgba(20,40,100,.2);border:1px solid rgba(96,160,255,.18);border-radius:12px;padding:14px 16px;margin-top:0}
+.reminder-label{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(140,180,255,.7);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+
+/* Alert banner */
+.alert-banner{display:flex;align-items:center;gap:10px;border-radius:12px;padding:11px 16px;margin-bottom:8px}
+
+/* Scrollable modal fix */
+.modal-box::-webkit-scrollbar{width:3px}
+.modal-box::-webkit-scrollbar-thumb{background:rgba(96,160,255,.2);border-radius:10px}
+
+/* Misc */
+.lbl{font-size:11px;color:rgba(100,150,220,.6);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;display:block}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>.field{flex:1 1 45%;min-width:120px}
+.field{display:flex;flex-direction:column}
+.section-gap{display:flex;flex-direction:column;gap:14px}
+</style>
+</head>
+<body>
+
+<!-- Ambient background -->
+<div id="bg" style="position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 20% -10%,rgba(20,60,160,.42) 0%,transparent 60%),
+             radial-gradient(ellipse 60% 50% at 80% 110%,rgba(10,40,120,.38) 0%,transparent 60%),#07101e">
+  <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(60,120,255,.06) 1px,transparent 1px);background-size:32px 32px"></div>
+</div>
+
+<div id="app" style="position:relative;z-index:1;min-height:100vh;padding-bottom:60px"></div>
+
+<!-- Templates -->
+<template id="tpl-header">
+<header id="header" style="display:flex;align-items:center;justify-content:space-between;padding:13px 20px;gap:12px;flex-wrap:wrap;
+  background:rgba(5,12,30,.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(96,160,255,.1);position:sticky;top:0;z-index:50">
+  <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,rgba(60,120,255,.5),rgba(30,70,200,.4));
+      border:1px solid rgba(96,160,255,.4);display:flex;align-items:center;justify-content:center">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.04em;color:#c8e4ff">IP</span>
+    </div>
+    <span style="font-family:'DM Serif Display',serif;font-size:22px;color:rgba(200,225,255,.92);letter-spacing:-.02em">autolog</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:center;flex-wrap:wrap">
+    <button class="btn" id="btn-car" style="font-size:13px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 11l1.5-4.5h11L19 11M3 11h18v5h-2v2h-2v-2H7v2H5v-2H3v-5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="14" r="1" fill="currentColor"/><circle cx="17" cy="14" r="1" fill="currentColor"/></svg>
+      <span id="car-label">Мой автомобиль</span>
+      <span id="plate-badge" style="display:none;background:rgba(20,50,120,.6);border:1px solid rgba(96,160,255,.25);color:rgba(140,200,255,.8);padding:2px 7px;border-radius:5px;font-family:monospace;font-size:11px;letter-spacing:.08em"></span>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="btn" id="btn-mileage" style="font-size:13px;gap:6px">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M7 7L4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>
+      <span id="mileage-label">Указать пробег</span>
+    </button>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <button class="btn btn-success btn-sm" id="btn-export" title="Экспорт данных">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 10v1.5A1.5 1.5 0 003.5 13h7a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Сохранить
+    </button>
+    <button class="btn btn-sm" id="btn-import" title="Импорт данных">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 9V1M4 4l3-3 3 3M2 10v1.5A1.5 1.5 0 003.5 13h7a1.5 1.5 0 001.5-1.5V10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Загрузить
+    </button>
+    <input type="file" id="file-input" accept=".json" style="display:none">
+    <button class="btn btn-primary" id="btn-add" style="font-size:13px">
+      <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Добавить запись
+    </button>
+  </div>
+</header>
+</template>
+
+<script>
+'use strict';
+
+/* ── Constants ─────────────────────────────────────────────────────────── */
+const CATEGORIES = [
+  {id:'oil',      label:'Масло / фильтры', icon:'🛢️'},
+  {id:'tires',    label:'Шины / колёса',   icon:'🔄'},
+  {id:'brakes',   label:'Тормоза',          icon:'⚙️'},
+  {id:'engine',   label:'Двигатель',        icon:'🔩'},
+  {id:'body',     label:'Кузов / стекло',  icon:'🚗'},
+  {id:'electrical',label:'Электрика',      icon:'⚡'},
+  {id:'fuel',     label:'Заправка',         icon:'⛽'},
+  {id:'other',    label:'Прочее',           icon:'📋'},
+];
+const CAT = Object.fromEntries(CATEGORIES.map(c=>[c.id,c]));
+const WARN_PCT = 90;
+const KEYS = {records:'ipal_records_v2', car:'ipal_car_v2', mileage:'ipal_mileage_v2'};
+
+/* ── Utils ─────────────────────────────────────────────────────────────── */
+const uid = () => Math.random().toString(36).slice(2,10);
+const fmtNum = n => (n!=null&&n!=='') ? Number(n).toLocaleString('ru-RU') : '—';
+const fmtMoney = n => n ? Number(n).toLocaleString('ru-RU')+' ₽' : null;
+const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+const todayStr = () => new Date().toISOString().split('T')[0];
+const load = (k,d) => { try{const r=localStorage.getItem(k);return r?JSON.parse(r):d}catch{return d} };
+const save = (k,v) => localStorage.setItem(k,JSON.stringify(v));
+const el = id => document.getElementById(id);
+const div = (cls,html='') => { const d=document.createElement('div');if(cls)d.className=cls;d.innerHTML=html;return d; };
+
+function getProgress(rec, cur) {
+  if (!rec.nextMileage||!rec.mileageAtService) return null;
+  const interval = rec.nextMileage - rec.mileageAtService;
+  if (interval<=0) return null;
+  const done = Math.max(0, cur - rec.mileageAtService);
+  const pct = Math.min(100, Math.round(done/interval*100));
+  const remaining = rec.nextMileage - cur;
+  return {pct, remaining, overdue: remaining<=0};
+}
+
+/* ── State ─────────────────────────────────────────────────────────────── */
+let records = load(KEYS.records, []);
+let car = load(KEYS.car, {make:'',model:'',year:'',plate:''});
+let currentMileage = load(KEYS.mileage, '');
+let filterCat = 'all';
+let sortDesc = true;
+let searchQuery = '';
+
+const persist = () => {
+  save(KEYS.records, records);
+  save(KEYS.car, car);
+  save(KEYS.mileage, currentMileage);
+};
+
+/* ── Modal engine ──────────────────────────────────────────────────────── */
+let activeModal = null;
+function showModal(title, contentFn, width=550) {
+  if (activeModal) activeModal.remove();
+  const ov = document.createElement('div');
+  ov.className = 'overlay';
+  ov.innerHTML = `
+    <div class="panel modal-box" style="max-width:${width}px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 15px;border-bottom:1px solid rgba(255,255,255,.07)">
+        <span style="font-family:'DM Serif Display',serif;font-size:17px;color:rgba(200,225,255,.9)">${title}</span>
+        <button class="btn btn-icon" id="modal-close">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div id="modal-content" style="padding:20px 22px 22px"></div>
+    </div>`;
+  document.body.appendChild(ov);
+  activeModal = ov;
+  contentFn(el('modal-content'));
+  el('modal-close').onclick = closeModal;
+  ov.addEventListener('click', e => { if(e.target===ov) closeModal(); });
+  document.addEventListener('keydown', escHandler);
+}
+function escHandler(e) { if(e.key==='Escape') closeModal(); }
+function closeModal() {
+  if(activeModal){ activeModal.remove(); activeModal=null; }
+  document.removeEventListener('keydown', escHandler);
+}
+
+/* ── Toast ─────────────────────────────────────────────────────────────── */
+function toast(msg, type='info') {
+  const t = document.createElement('div');
+  const bg = type==='ok' ? 'rgba(30,120,60,.85)' : type==='err' ? 'rgba(140,30,30,.85)' : 'rgba(20,50,120,.85)';
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:999;
+    background:${bg};border:1px solid rgba(255,255,255,.15);color:#e0f0ff;
+    padding:10px 20px;border-radius:10px;font-size:13px;backdrop-filter:blur(12px);
+    animation:fadeUp .25s ease;white-space:nowrap;max-width:90vw;text-align:center`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+
+/* ── Record form ───────────────────────────────────────────────────────── */
+function buildRecordForm(container, initial, onSave) {
+  const isEdit = !!initial;
+  const f = initial ? {...initial} : {
+    date: todayStr(), category:'oil', mileage: currentMileage||'',
+    title:'', cost:'', garage:'', notes:'',
+    nextMileage:'', intervalKm:'', mileageAtService: currentMileage||''
+  };
+
+  container.innerHTML = `
+  <div class="section-gap">
+    <div class="row">
+      <div class="field"><label class="lbl">Дата</label><input class="inp" type="date" id="f-date" value="${f.date}"></div>
+      <div class="field"><label class="lbl">Категория</label>
+        <select class="inp" id="f-cat">
+          ${CATEGORIES.map(c=>`<option value="${c.id}" ${c.id===f.category?'selected':''}>${c.icon} ${c.label}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+
+    <div class="field"><label class="lbl">Название работы *</label>
+      <input class="inp" type="text" id="f-title" placeholder="Замена масла 5W-40 Castrol" value="${escHtml(f.title)}">
+    </div>
+
+    <div class="row">
+      <div class="field"><label class="lbl">Пробег при работе (км)</label>
+        <input class="inp" type="number" id="f-mileage" placeholder="85000" value="${f.mileage}">
+      </div>
+      <div class="field"><label class="lbl">Стоимость (₽)</label>
+        <input class="inp" type="number" id="f-cost" placeholder="4500" value="${f.cost}">
+      </div>
+    </div>
+
+    <div class="reminder-panel">
+      <div class="reminder-label">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M7 1.5A3.5 3.5 0 003.5 5v3L2 10h10l-1.5-2V5A3.5 3.5 0 007 1.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 10.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+        Напоминание по пробегу
+      </div>
+      <div class="row">
+        <div class="field"><label class="lbl">Повторить через (км)</label>
+          <input class="inp" type="number" id="f-interval" placeholder="10000" value="${f.intervalKm}">
+        </div>
+        <div class="field"><label class="lbl">Следующий ТО на пробеге</label>
+          <input class="inp" type="number" id="f-next" placeholder="автозаполнение" value="${f.nextMileage}" style="color:rgba(120,200,255,.9)">
+        </div>
+      </div>
+      <p style="font-size:11px;color:rgba(100,140,200,.55);margin-top:8px">При достижении указанного пробега — предупреждение</p>
+    </div>
+
+    <div class="field"><label class="lbl">Место (СТО / магазин)</label>
+      <input class="inp" type="text" id="f-garage" placeholder="СТО Автомастер" value="${escHtml(f.garage)}">
+    </div>
+
+    <div class="field"><label class="lbl">Заметки</label>
+      <textarea class="inp" id="f-notes" placeholder="Дополнительные сведения...">${escHtml(f.notes)}</textarea>
+    </div>
+
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" id="f-cancel">Отмена</button>
+      <button class="btn btn-primary" id="f-save">${isEdit ? 'Сохранить изменения' : 'Добавить запись'}</button>
+    </div>
+  </div>`;
+
+  // Auto-compute next mileage
+  function autoNext() {
+    const m = Number(el('f-mileage').value);
+    const iv = Number(el('f-interval').value);
+    if (m>0 && iv>0) {
+      el('f-next').value = m+iv;
+    }
+  }
+  el('f-mileage').addEventListener('input', autoNext);
+  el('f-interval').addEventListener('input', autoNext);
+
+  el('f-cancel').onclick = closeModal;
+  el('f-save').onclick = () => {
+    const title = el('f-title').value.trim();
+    if (!title) { el('f-title').focus(); toast('Введите название работы','err'); return; }
+    const mileage = el('f-mileage').value;
+    const interval = el('f-interval').value;
+    const next = el('f-next').value;
+    onSave({
+      id: f.id || uid(),
+      date: el('f-date').value,
+      category: el('f-cat').value,
+      mileage, cost: el('f-cost').value,
+      title, garage: el('f-garage').value.trim(),
+      notes: el('f-notes').value.trim(),
+      intervalKm: interval,
+      nextMileage: next ? Number(next) : '',
+      mileageAtService: mileage ? Number(mileage) : '',
+    });
+    closeModal();
+  };
+}
+
+/* ── Car form ──────────────────────────────────────────────────────────── */
+function buildCarForm(container) {
+  container.innerHTML = `
+  <div class="section-gap">
+    <div class="row">
+      <div class="field"><label class="lbl">Марка</label><input class="inp" id="c-make" placeholder="Toyota" value="${escHtml(car.make)}"></div>
+      <div class="field"><label class="lbl">Модель</label><input class="inp" id="c-model" placeholder="Camry" value="${escHtml(car.model)}"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label class="lbl">Год</label><input class="inp" type="number" id="c-year" placeholder="2019" value="${car.year}"></div>
+      <div class="field"><label class="lbl">Гос. номер</label><input class="inp" id="c-plate" placeholder="А123БВ77" value="${escHtml(car.plate)}"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+      <button class="btn" id="c-cancel">Отмена</button>
+      <button class="btn btn-primary" id="c-save">Сохранить</button>
+    </div>
+  </div>`;
+  el('c-cancel').onclick = closeModal;
+  el('c-save').onclick = () => {
+    car = {make:el('c-make').value.trim(), model:el('c-model').value.trim(), year:el('c-year').value.trim(), plate:el('c-plate').value.trim()};
+    persist(); updateHeader(); closeModal(); toast('Данные автомобиля сохранены','ok');
+  };
+}
+
+/* ── Mileage modal ─────────────────────────────────────────────────────── */
+function buildMileageForm(container) {
+  container.innerHTML = `
+  <div class="section-gap">
+    <div class="field"><label class="lbl">Текущий пробег (км)</label>
+      <input class="inp" type="number" id="m-val" placeholder="85000" value="${currentMileage}" style="font-size:20px;text-align:center">
+    </div>
+    <p style="font-size:12px;color:rgba(100,140,200,.55);text-align:center">Пробег используется для расчёта напоминаний о ТО</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="m-cancel">Отмена</button>
+      <button class="btn btn-primary" id="m-save">Применить</button>
+    </div>
+  </div>`;
+  el('m-cancel').onclick = closeModal;
+  el('m-save').onclick = () => {
+    const v = Number(el('m-val').value);
+    if (v>0) { currentMileage=v; persist(); updateHeader(); renderMain(); closeModal(); toast('Пробег обновлён','ok'); }
+    else { toast('Введите корректный пробег','err'); }
+  };
+  setTimeout(()=>{ const i=el('m-val'); i.focus(); i.select(); },50);
+}
+
+/* ── Confirm delete ────────────────────────────────────────────────────── */
+function confirmDelete(id) {
+  showModal('Удалить запись?', container => {
+    container.innerHTML = `
+      <p style="color:rgba(140,180,230,.6);margin-bottom:20px;font-size:14px">Это действие нельзя отменить.</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn" id="d-cancel">Отмена</button>
+        <button class="btn btn-danger" id="d-ok">Удалить</button>
+      </div>`;
+    el('d-cancel').onclick = closeModal;
+    el('d-ok').onclick = () => {
+      records = records.filter(r=>r.id!==id);
+      persist(); renderMain(); closeModal(); toast('Запись удалена');
+    };
+  }, 400);
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+function updateHeader() {
+  const name = [car.make,car.model,car.year].filter(Boolean).join(' ') || 'Мой автомобиль';
+  const lbl = el('car-label'); if(lbl) lbl.textContent = name;
+  const pb = el('plate-badge');
+  if(pb){ if(car.plate){ pb.textContent=car.plate; pb.style.display=''; } else pb.style.display='none'; }
+  const ml = el('mileage-label');
+  if(ml) ml.textContent = currentMileage ? fmtNum(currentMileage)+' км' : 'Указать пробег';
+}
+
+function initHeader() {
+  const tpl = el('tpl-header').content.cloneNode(true);
+  const app = el('app');
+  // Remove old header if any
+  const old = el('header');
+  if(old) old.remove();
+  app.prepend(tpl);
+  updateHeader();
+
+  el('btn-car').onclick = () => showModal('Данные автомобиля', buildCarForm, 480);
+  el('btn-mileage').onclick = () => showModal('Текущий пробег', buildMileageForm, 380);
+  el('btn-add').onclick = () => showModal('Новая запись', c => buildRecordForm(c, null, rec => {
+    records.unshift(rec); persist(); renderMain(); toast('Запись добавлена','ok');
+  }));
+  el('btn-export').onclick = exportData;
+  el('btn-import').onclick = () => el('file-input').click();
+  el('file-input').onchange = importData;
+}
+
+/* ── Export / Import ───────────────────────────────────────────────────── */
+function exportData() {
+  const data = { records, car, currentMileage, exportedAt: new Date().toISOString(), version:2 };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`ipautolog-backup-${todayStr()}.json`; a.click();
+  URL.revokeObjectURL(url);
+  toast('Резервная копия сохранена','ok');
+}
+
+function importData(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      if (!Array.isArray(d.records)) throw new Error('bad format');
+      records = d.records;
+      if(d.car) car = d.car;
+      if(d.currentMileage) currentMileage = d.currentMileage;
+      persist(); updateHeader(); renderMain();
+      toast(`Загружено ${records.length} записей`,'ok');
+    } catch {
+      toast('Ошибка: неверный формат файла','err');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+/* ── Alerts ────────────────────────────────────────────────────────────── */
+function buildAlerts(container) {
+  const cur = Number(currentMileage)||0;
+  const alerts = records
+    .filter(r=>r.nextMileage)
+    .map(r=>({...r, prog:getProgress(r,cur)}))
+    .filter(r=>r.prog&&(r.prog.overdue||r.prog.pct>=WARN_PCT))
+    .map(r=>({title:r.title, remaining:r.prog.remaining, nextMileage:Number(r.nextMileage), overdue:r.prog.overdue}));
+
+  if(!alerts.length){container.innerHTML='';return;}
+  container.innerHTML = alerts.map((a,i)=>`
+    <div class="alert-banner warn-pulse" style="
+      background:${a.overdue?'linear-gradient(90deg,rgba(200,50,50,.2),rgba(180,30,30,.1))':'linear-gradient(90deg,rgba(200,130,30,.2),rgba(180,100,20,.1))'};
+      border:1px solid ${a.overdue?'rgba(255,100,80,.35)':'rgba(255,190,60,.3)'};
+      animation-delay:${i*.3}s">
+      <span style="font-size:16px">${a.overdue?'🔴':'🟡'}</span>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${a.overdue?'#ffaaaa':'#ffd580'}">${escHtml(a.title)}</div>
+        <div style="font-size:12px;color:rgba(200,200,200,.55);margin-top:2px">
+          ${a.overdue
+            ? `Просрочено на ${Math.abs(a.remaining).toLocaleString('ru-RU')} км — план ${a.nextMileage.toLocaleString('ru-RU')} км`
+            : `Осталось ${a.remaining.toLocaleString('ru-RU')} км — план ${a.nextMileage.toLocaleString('ru-RU')} км`}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── Stats ─────────────────────────────────────────────────────────────── */
+function buildStats(container) {
+  if(!records.length){container.innerHTML='';return;}
+  const total = records.reduce((s,r)=>s+(Number(r.cost)||0),0);
+  const yr = new Date().getFullYear();
+  const yrCost = records.filter(r=>r.date&&new Date(r.date).getFullYear()===yr).reduce((s,r)=>s+(Number(r.cost)||0),0);
+  const cur = Number(currentMileage)||0;
+  const warnCount = records.filter(r=>{const p=getProgress(r,cur);return p&&(p.overdue||p.pct>=WARN_PCT);}).length;
+
+  const items = [
+    {val:records.length, lbl:'записей'},
+    {val:(cur?fmtNum(cur)+' км':'—'), lbl:'текущий пробег'},
+    {val:total.toLocaleString('ru-RU')+' ₽', lbl:'всего потрачено'},
+    {val:yrCost.toLocaleString('ru-RU')+' ₽', lbl:`в ${yr} году`},
+    warnCount?{val:warnCount, lbl:'предупреждений', warn:true}:null,
+  ].filter(Boolean);
+
+  container.innerHTML = `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+    ${items.map(it=>`
+      <div class="panel" style="padding:12px 16px;border-radius:14px;flex:1 1 90px;
+        ${it.warn?'border:1px solid rgba(255,180,60,.3);background:linear-gradient(135deg,rgba(255,160,30,.08),rgba(200,100,20,.04))':''}">
+        <div style="font-size:18px;font-weight:600;font-family:'DM Serif Display',serif;color:${it.warn?'#ffbe40':'rgba(160,210,255,.95)'};line-height:1">${it.val}</div>
+        <div style="font-size:10px;color:rgba(100,140,200,.55);margin-top:4px;text-transform:uppercase;letter-spacing:.07em">${it.lbl}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ── Record card ───────────────────────────────────────────────────────── */
+function buildCard(r, idx) {
+  const cat = CAT[r.category]||CAT.other;
+  const cur = Number(currentMileage)||0;
+  const prog = getProgress(r, cur);
+  let progColor = 'rgba(60,160,255,.7)';
+  if(prog){ if(prog.overdue) progColor='#ff6050'; else if(prog.pct>=WARN_PCT) progColor='#ffbe40'; }
+
+  const progressHTML = prog ? `
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:11px;color:rgba(140,180,240,.55)">${prog.overdue?'⚠ Просрочено':`${prog.pct}% до следующего ТО`}</span>
+        <span style="font-size:11px;color:rgba(140,180,240,.55)">${prog.overdue?`+${Math.abs(prog.remaining).toLocaleString('ru-RU')} км`:`ещё ${prog.remaining.toLocaleString('ru-RU')} км`}</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${prog.pct}%;background:${progColor}"></div></div>
+    </div>` : '';
+
+  const nextChip = r.nextMileage ? `<span class="chip chip-blue">🔔 ТО на ${fmtNum(r.nextMileage)} км</span>` : '';
+  const mileageChip = r.mileage ? `<span class="chip">🔢 ${fmtNum(r.mileage)} км</span>` : '';
+  const garageChip = r.garage ? `<span class="chip">📍 ${escHtml(r.garage)}</span>` : '';
+  const costHtml = r.cost ? `<div style="font-size:15px;font-weight:700;color:rgba(120,190,255,.9);font-family:'DM Serif Display',serif">${fmtMoney(r.cost)}</div>` : '';
+
+  const d = document.createElement('div');
+  d.className = 'panel fadeUp';
+  d.style.cssText = `padding:16px 18px;animation-delay:${idx*.04}s`;
+  d.innerHTML = `
+    <div style="display:flex;gap:13px;align-items:flex-start">
+      <div style="width:42px;height:42px;border-radius:12px;flex-shrink:0;
+        background:rgba(60,100,200,.14);border:1px solid rgba(96,160,255,.17);
+        display:flex;align-items:center;justify-content:center;font-size:20px">${cat.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+          <span style="font-size:15px;font-weight:600;color:rgba(210,230,255,.92);line-height:1.3">${escHtml(r.title)}</span>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+            <span style="font-size:11px;color:rgba(100,140,200,.5)">${fmtDate(r.date)}</span>
+            ${costHtml}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center">
+          <span class="chip">${cat.icon} ${cat.label}</span>
+          ${mileageChip}${garageChip}${nextChip}
+        </div>
+        ${r.notes?`<p style="margin-top:7px;font-size:13px;color:rgba(120,160,210,.5);font-style:italic;line-height:1.5">${escHtml(r.notes)}</p>`:''}
+        ${progressHTML}
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:12px">
+      <button class="btn btn-sm btn-edit" data-id="${r.id}">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9.5 1.5l3 3-7 7H3v-3l7-7z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Изменить
+      </button>
+      <button class="btn btn-sm btn-danger btn-del" data-id="${r.id}">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M2.5 3.5h9M5.5 3.5v-1h3v1M4.5 3.5l.5 8h4l.5-8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Удалить
+      </button>
+    </div>`;
+  return d;
+}
+
+/* ── Main render ───────────────────────────────────────────────────────── */
+function renderMain() {
+  let main = el('main-content');
+  if(!main){
+    main = document.createElement('div');
+    main.id = 'main-content';
+    main.style.cssText = 'max-width:780px;margin:0 auto;padding:24px 16px 0';
+    el('app').appendChild(main);
+  }
+
+  // Filter + sort
+  let filtered = records
+    .filter(r => filterCat==='all' || r.category===filterCat)
+    .filter(r => !searchQuery || [r.title,r.notes,r.garage].join(' ').toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a,b) => sortDesc ? (b.date||'').localeCompare(a.date||'') : (a.date||'').localeCompare(b.date||''));
+
+  main.innerHTML = '';
+
+  // Alerts
+  const alertBox = div(''); alertBox.id='alerts-box'; main.appendChild(alertBox);
+  buildAlerts(alertBox);
+
+  // Stats
+  const statsBox = div(''); statsBox.id='stats-box'; main.appendChild(statsBox);
+  buildStats(statsBox);
+
+  // Toolbar
+  const toolbar = div('');
+  toolbar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px';
+  toolbar.innerHTML = `
+    <input class="inp" id="search-inp" type="text" placeholder="Поиск…" value="${escHtml(searchQuery)}" style="flex:1 1 150px;min-width:130px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-sm ${filterCat==='all'?'filter-active':''}" data-filter="all" style="font-size:12px">Все</button>
+      ${CATEGORIES.map(c=>`<button class="btn btn-sm ${filterCat===c.id?'filter-active':''}" data-filter="${c.id}" style="font-size:15px;padding:5px 8px">${c.icon}</button>`).join('')}
+    </div>
+    <button class="btn btn-sm" id="btn-sort" style="font-size:12px">${sortDesc?'↓ Новые':'↑ Старые'}</button>`;
+  main.appendChild(toolbar);
+
+  // Search
+  el('search-inp').addEventListener('input', e => { searchQuery=e.target.value; renderMain(); });
+  // Filters
+  toolbar.querySelectorAll('[data-filter]').forEach(b=>{
+    b.onclick = () => { filterCat=b.dataset.filter; renderMain(); };
+  });
+  // Sort
+  el('btn-sort').onclick = () => { sortDesc=!sortDesc; renderMain(); };
+
+  // Cards list
+  const list = div('');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:10px';
+
+  if(!filtered.length){
+    list.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;padding:70px 20px;text-align:center">
+        <div style="font-size:52px;margin-bottom:12px">🔧</div>
+        <div style="font-size:19px;color:rgba(180,210,255,.7);font-family:'DM Serif Display',serif">Записей пока нет</div>
+        <div style="font-size:13px;color:rgba(100,140,200,.45);margin-top:8px;max-width:290px">
+          Нажмите «Добавить запись», чтобы начать вести журнал обслуживания
+        </div>
+      </div>`;
+  } else {
+    filtered.forEach((r,i)=>{
+      const card = buildCard(r,i);
+      list.appendChild(card);
+    });
+  }
+
+  main.appendChild(list);
+
+  // Delegate card actions
+  list.addEventListener('click', e=>{
+    const editBtn = e.target.closest('.btn-edit');
+    const delBtn  = e.target.closest('.btn-del');
+    if(editBtn){
+      const id = editBtn.dataset.id;
+      const rec = records.find(r=>r.id===id);
+      if(rec) showModal('Редактировать запись', c=>buildRecordForm(c, rec, updated=>{
+        records = records.map(r=>r.id===updated.id?updated:r);
+        persist(); renderMain(); toast('Запись обновлена','ok');
+      }));
+    }
+    if(delBtn){ confirmDelete(delBtn.dataset.id); }
+  });
+}
+
+/* ── Escape HTML ───────────────────────────────────────────────────────── */
+function escHtml(s=''){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Boot ──────────────────────────────────────────────────────────────── */
+function boot() {
+  initHeader();
+  renderMain();
+  // Show mileage prompt if not set and records have reminders
+  if(!currentMileage && records.some(r=>r.nextMileage)){
+    setTimeout(()=>toast('Укажите текущий пробег для работы напоминаний'),800);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+</body>
+</html>
